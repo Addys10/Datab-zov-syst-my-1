@@ -1,0 +1,63 @@
+Insert into Nakladatelstvi values (1, 'Albatros', Typ_adresa('Praha', 'Na Pankráci', 168, '140 00'))
+Insert into Nakladatelstvi values (2, 'Fantom Print', Typ_adresa('Ostrava', 'Krátká', 96, '70 300'))
+Insert into Nakladatelstvi values (3, 'Pali', Typ_adresa('Opava', 'U Náměstí', 9, '745 56'))
+
+Insert into Kniha values ('978-80-7390-063', 'Bílá nemoc', 'BN', 160, 1)
+Insert into Kniha values ('673-70-7390-097', 'Kytice', 'Kytice', 300, 2)
+Insert into Kniha values ('48-400-7390-041', 'Rumours', 'RR', 600, 3)
+Insert into Kniha values ('98-60-7390-067', 'Ostře sledované vlaky', 'OSV', 249, 1)
+
+Insert into Autor values (1, 'Bohumil', 'Hrabal', to_date('4-14-1949', 'mm/dd/yyyy'))
+Insert into Autor values (2, 'Karel Jaromir', 'Erben', to_date('6-17-1960', 'mm/dd/yyyy'))
+Insert into Autor values (3, 'Karel', 'Čapek', to_date('2-17-1936', 'mm/dd/yyyy'))
+Insert into Autor values (4, 'Pietro', 'Sionko', to_date('3-26-1959', 'mm/dd/yyyy'))
+
+Insert into Rozpis_autoru values (1,'98-60-7390-067')
+Insert into Rozpis_autoru values (2,'673-70-7390-097')
+Insert into Rozpis_autoru values (3,'978-80-7390-063')
+Insert into Rozpis_autoru values (4,'48-400-7390-041')
+
+
+Insert into Ctenar values(100,'Adam','Hanus', Typ_adresa('Ostrava', 'Dlouhá', 101, '70 300'), Typ_kontakt('739063070', 'adamhanus@email.cz'), Typ_vek('0107055916'))
+Insert into Ctenar values(101,'David','Rusman', Typ_adresa('Praha', 'Novosadová', 217, '140 00'), Typ_kontakt('739063070', 'davidrusman@email.cz'), Typ_vek('0004055316'))
+Insert into Ctenar values(102,'Petr','Novak', Typ_adresa('Ostrava', 'Sokolská', 689, '70 300'), Typ_kontakt('736698854', 'petrnovak@email.cz'), Typ_vek('7807055616'))
+
+Insert into Knihovnik values(200,'Jan','Novak', Typ_adresa('Ostrava', 'Na bělidle', 417, '70 300'),Typ_vek('9711055911'), Typ_kontakt('739545891', 'jannovak@email.cz'))
+Insert into Knihovnik values(201,'Ondra','Sladky', Typ_adresa('Olomouc', 'Fotbalová', 198, '70 600'),Typ_vek('9808055416'), Typ_kontakt('739321456', 'ondrejsl@email.cz'))
+Insert into Knihovnik values(301,'Vojta','Korytar', Typ_adresa('Opava', 'Zelená', 549, '745 56'),Typ_vek('9907065914'), Typ_kontakt('739789321', 'vojtakory@email.cz'))
+
+Insert into Prodejce values(400,'Petr','Stanek', Typ_adresa('Opava', 'Hybridni', 978, '745 56'),Typ_vek('8903065914') ,Typ_kontakt('749689321', 'stanekpete@email.cz'))
+Insert into Prodejce values(401,'Luboš','Perla', Typ_adresa('Praha', 'Ruzova', 473, '140 00'),Typ_vek('7507065914'), Typ_kontakt('746786721', 'lubosperla@email.cz'))
+Insert into Prodejce values(403,'Daniel','Chobotnik', Typ_adresa('Ostrava', 'Amosova', 6, '700 30'),Typ_vek('6911065914'), Typ_kontakt('734789321', 'danielchobot@email.cz'))
+
+Insert into Dodavatel values(600, 'Super', 'firma')
+Insert into Dodavatel values(601, 'Nevim', 'partner')
+Insert into Dodavatel values(602, 'Prototypové', 'firma')
+
+Insert into Firma values (600, 'Knihotronics a.s.')
+Insert into Partner values (601, 'Bookstore')
+Insert into Firma values (602, 'Knihyahoj sro')
+
+
+Insert into Sklad values (2000, Typ_adresa('Novy jicin', 'Selska', 489, '74 564'), 600)
+Insert into Sklad values (2001, Typ_adresa('Ostrava', 'Damvo', 489, '70 300'), 601)
+Insert into Sklad values (2002, Typ_adresa('Mikulovice', 'Trolocka', 489, '75 984'), 602)
+
+Insert into Exemplar values(1, 200, 'Bílá nemoc', '978-80-7390-063', 2001)
+Insert into Exemplar values(2, 300, 'Kytice', '673-70-7390-097', 2000)
+Insert into Exemplar values(3, 799, 'Rumours', '48-400-7390-041', 2001)
+Insert into Exemplar values(4, 250, 'Ostře sledované vlaky', '98-60-7390-067', 2000)
+Insert into Exemplar values(5, 200, 'Bílá nemoc', '978-80-7390-063', 2002)
+
+Insert into Rezervace values(315, to_date('7-22-2022', 'mm/dd/yyyy'), '673-70-7390-097',100)
+Insert into Rezervace values(316, to_date('9-12-2022', 'mm/dd/yyyy'), '98-60-7390-067',101)
+
+Insert into Vypujcka values (1, to_date('6-19-2022', 'mm/dd/yyyy'), to_date('6-29-2022', 'mm/dd/yyyy'), 101, 2, 200)
+Insert into Vypujcka values (2, to_date('6-20-2022', 'mm/dd/yyyy'), to_date('7-26-2022', 'mm/dd/yyyy'), 102, 4, 201)
+
+Insert into Zakaznik values (190, 'Adam', 'Novy', Typ_kontakt('736057896','adamnov@gmail.com'),Typ_vek('6911065914'))
+
+Insert into Prodej values(1,to_date('6-20-2022', 'mm/dd/yyyy'), Typ_cena(250, 2), 190, 4, 401)
+Insert into Prodej values(2,to_date('4-24-2022', 'mm/dd/yyyy'), Typ_cena(200, 3), 190, 1, 403)
+
+
