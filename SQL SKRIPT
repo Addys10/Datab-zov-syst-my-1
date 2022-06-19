@@ -1,0 +1,390 @@
+CREATE OR REPLACE TYPE typ_adresa AS OBJECT (
+    mesto         VARCHAR2(20),
+    ulice         VARCHAR2(30),
+    cislo_popisne NUMBER,
+    psc           VARCHAR2(10)
+) NOT FINAL;
+/
+
+CREATE OR REPLACE TYPE typ_cena AS OBJECT (
+    cena_kusu NUMBER,
+    pocet     NUMBER,
+    MEMBER FUNCTION celkem RETURN NUMBER
+) NOT FINAL;
+/
+
+CREATE OR REPLACE TYPE typ_kontakt AS OBJECT (
+    telefon VARCHAR2(30),
+    email   VARCHAR2(30)
+) NOT FINAL;
+/
+
+CREATE OR REPLACE TYPE typ_vek AS OBJECT (
+    rc VARCHAR2(10),
+    MEMBER FUNCTION generovani_veku RETURN NUMBER
+) NOT FINAL;
+/
+
+-- predefined type, no DDL - XMLTYPE
+
+CREATE OR REPLACE TYPE kolekce_kontakt IS
+    VARRAY(1) OF typ_kontakt;
+/
+
+CREATE TABLE autor (
+    id             NUMBER NOT NULL,
+    jmeno          VARCHAR2(30) NOT NULL,
+    prijmeni       VARCHAR2(30) NOT NULL,
+    datum_narozeni DATE
+);
+
+ALTER TABLE autor ADD CONSTRAINT autor_pk PRIMARY KEY ( id );
+
+CREATE TABLE ctenar (
+    cislo_prukazu_ctenare NUMBER NOT NULL,
+    jmeno                 VARCHAR2(30) NOT NULL,
+    prijmeni              VARCHAR2(30) NOT NULL,
+    adresa                typ_adresa NOT NULL,
+    telefon               typ_kontakt NOT NULL,
+    vek                   typ_vek NOT NULL,
+    CHECK ( adresa.mesto IS NOT NULL ),
+    CHECK ( adresa.ulice IS NOT NULL ),
+    CHECK ( adresa.cislo_popisne IS NOT NULL ),
+    CHECK ( adresa.psc IS NOT NULL ),
+    CHECK ( telefon.telefon IS NOT NULL ),
+    CHECK ( vek.rc IS NOT NULL )
+);
+
+ALTER TABLE ctenar ADD CONSTRAINT ctenar_pk PRIMARY KEY ( cislo_prukazu_ctenare );
+
+CREATE TABLE dodavatel (
+    id_dodavatel   NUMBER NOT NULL,
+    popis          VARCHAR2(30) NOT NULL,
+    typ_dodavatele VARCHAR2(9) NOT NULL
+);
+
+ALTER TABLE dodavatel ADD CONSTRAINT dodavatel_pk PRIMARY KEY ( id_dodavatel );
+
+CREATE TABLE exemplar (
+    id_exemplare   NUMBER NOT NULL,
+    cena           NUMBER NOT NULL,
+    nazev          VARCHAR2(30) NOT NULL,
+    kniha_isbn     VARCHAR2(30) NOT NULL,
+    sklad_id_sklad NUMBER NOT NULL
+);
+
+ALTER TABLE exemplar ADD CONSTRAINT exemplar_pk PRIMARY KEY ( id_exemplare );
+
+CREATE TABLE firma (
+    dodavatel_id_dodavatel NUMBER NOT NULL,
+    nazev                  VARCHAR2(20) NOT NULL
+);
+
+ALTER TABLE firma ADD CONSTRAINT firma_pk PRIMARY KEY ( dodavatel_id_dodavatel );
+
+CREATE TABLE kniha (
+    isbn              VARCHAR2(30) NOT NULL,
+    nazev             VARCHAR2(30) NOT NULL,
+    titul             VARCHAR2(30) NOT NULL,
+    doporucena_cena   NUMBER NOT NULL,
+    id_nakladatelstvi NUMBER NOT NULL
+);
+
+ALTER TABLE kniha ADD CONSTRAINT kniha_pk PRIMARY KEY ( isbn );
+
+CREATE TABLE knihovnik (
+    cislo_zamestnance NUMBER NOT NULL,
+    jmeno             VARCHAR2(30) NOT NULL,
+    prijmeni          VARCHAR2(30) NOT NULL,
+    adresa            typ_adresa NOT NULL,
+    vek               typ_vek NOT NULL,
+    telefon           typ_kontakt NOT NULL,
+    CHECK ( adresa.mesto IS NOT NULL ),
+    CHECK ( adresa.ulice IS NOT NULL ),
+    CHECK ( adresa.cislo_popisne IS NOT NULL ),
+    CHECK ( adresa.psc IS NOT NULL ),
+    CHECK ( vek.rc IS NOT NULL ),
+    CHECK ( telefon.telefon IS NOT NULL )
+);
+
+ALTER TABLE knihovnik ADD CONSTRAINT knihovnik_pk PRIMARY KEY ( cislo_zamestnance );
+
+CREATE TABLE nakladatelstvi (
+    id_nakladatelstvi NUMBER NOT NULL,
+    nazev             VARCHAR2(30) NOT NULL,
+    adresa            typ_adresa NOT NULL,
+    CHECK ( adresa.mesto IS NOT NULL ),
+    CHECK ( adresa.ulice IS NOT NULL ),
+    CHECK ( adresa.cislo_popisne IS NOT NULL ),
+    CHECK ( adresa.psc IS NOT NULL )
+);
+
+ALTER TABLE nakladatelstvi ADD CONSTRAINT nakladatelstvi_pk PRIMARY KEY ( id_nakladatelstvi );
+
+CREATE TABLE partner (
+    dodavatel_id_dodavatel NUMBER NOT NULL,
+    nazev                  VARCHAR2(20) NOT NULL
+);
+
+ALTER TABLE partner ADD CONSTRAINT partner_pk PRIMARY KEY ( dodavatel_id_dodavatel );
+
+CREATE TABLE prodej (
+    id_prodeje                 NUMBER NOT NULL,
+    datum_zakoupeni            DATE NOT NULL,
+    celkova_cena               typ_cena NOT NULL,
+    cislo_zakaznicke_karty     NUMBER NOT NULL,
+    exemplar_id_exemplare      NUMBER NOT NULL,
+    prodejce_cislo_zamestnance NUMBER NOT NULL,
+    CHECK ( celkova_cena.cena_kusu IS NOT NULL ),
+    CHECK ( celkova_cena.pocet IS NOT NULL )
+);
+
+ALTER TABLE prodej ADD CONSTRAINT prodej_pk PRIMARY KEY ( id_prodeje );
+
+CREATE TABLE prodejce (
+    cislo_zamestnance NUMBER NOT NULL,
+    jmeno             VARCHAR2(30) NOT NULL,
+    prijmeni          VARCHAR2(30) NOT NULL,
+    adresa            typ_adresa NOT NULL,
+    vek               typ_vek NOT NULL,
+    telefon           typ_kontakt NOT NULL,
+    CHECK ( adresa.mesto IS NOT NULL ),
+    CHECK ( adresa.ulice IS NOT NULL ),
+    CHECK ( adresa.cislo_popisne IS NOT NULL ),
+    CHECK ( adresa.psc IS NOT NULL ),
+    CHECK ( vek.rc IS NOT NULL ),
+    CHECK ( telefon.telefon IS NOT NULL )
+);
+
+ALTER TABLE prodejce ADD CONSTRAINT prodejce_pk PRIMARY KEY ( cislo_zamestnance );
+
+CREATE TABLE rezervace (
+    id_rezervace                 NUMBER NOT NULL,
+    datum_rezervace              DATE NOT NULL,
+    kniha_isbn                   VARCHAR2(30) NOT NULL,
+    ctenar_cislo_prukazu_ctenare NUMBER NOT NULL
+);
+
+CREATE UNIQUE INDEX rezervace__idx ON
+    rezervace (
+        kniha_isbn
+    ASC );
+
+ALTER TABLE rezervace ADD CONSTRAINT rezervace_pk PRIMARY KEY ( id_rezervace );
+
+CREATE TABLE rozpis_autoru (
+    autor_id   NUMBER NOT NULL,
+    kniha_isbn VARCHAR2(30) NOT NULL
+);
+
+ALTER TABLE rozpis_autoru ADD CONSTRAINT relation_1_pk PRIMARY KEY ( autor_id,
+                                                                     kniha_isbn );
+
+CREATE TABLE sklad (
+    id_sklad               NUMBER NOT NULL,
+    adresa                 typ_adresa NOT NULL,
+    dodavatel_id_dodavatel NUMBER NOT NULL,
+    CHECK ( adresa.mesto IS NOT NULL ),
+    CHECK ( adresa.ulice IS NOT NULL ),
+    CHECK ( adresa.cislo_popisne IS NOT NULL ),
+    CHECK ( adresa.psc IS NOT NULL )
+);
+
+ALTER TABLE sklad ADD CONSTRAINT sklad_pk PRIMARY KEY ( id_sklad );
+
+CREATE TABLE vypujcka (
+    id_vypujcky                  NUMBER NOT NULL,
+    datum_pujceni                DATE NOT NULL,
+    datum_vraceni                DATE NOT NULL,
+    ctenar_cislo_prukazu_ctenare NUMBER NOT NULL,
+    exemplar_id_exemplare        NUMBER NOT NULL,
+    knihovnik_cislo_zamestnance  NUMBER NOT NULL
+);
+
+CREATE UNIQUE INDEX vypujcka__idx ON
+    vypujcka (
+        exemplar_id_exemplare
+    ASC );
+
+ALTER TABLE vypujcka ADD CONSTRAINT vypujcka_pk PRIMARY KEY ( id_vypujcky );
+
+CREATE TABLE zakaznik (
+    cislo_zakaznicke_karty NUMBER NOT NULL,
+    jmeno                  VARCHAR2(30) NOT NULL,
+    prijmeni               VARCHAR2(30) NOT NULL,
+    telefon                typ_kontakt NOT NULL,
+    vek                    typ_vek,
+    CHECK ( telefon.telefon IS NOT NULL ),
+    CHECK ( vek.rc IS NOT NULL )
+);
+
+ALTER TABLE zakaznik ADD CONSTRAINT zakaznik_pk PRIMARY KEY ( cislo_zakaznicke_karty );
+
+ALTER TABLE exemplar
+    ADD CONSTRAINT exemplar_kniha_fk FOREIGN KEY ( kniha_isbn )
+        REFERENCES kniha ( isbn );
+
+ALTER TABLE exemplar
+    ADD CONSTRAINT exemplar_sklad_fk FOREIGN KEY ( sklad_id_sklad )
+        REFERENCES sklad ( id_sklad );
+
+ALTER TABLE firma
+    ADD CONSTRAINT firma_dodavatel_fk FOREIGN KEY ( dodavatel_id_dodavatel )
+        REFERENCES dodavatel ( id_dodavatel );
+
+ALTER TABLE kniha
+    ADD CONSTRAINT kniha_nakladatelstvi_fk FOREIGN KEY ( id_nakladatelstvi )
+        REFERENCES nakladatelstvi ( id_nakladatelstvi );
+
+ALTER TABLE partner
+    ADD CONSTRAINT partner_dodavatel_fk FOREIGN KEY ( dodavatel_id_dodavatel )
+        REFERENCES dodavatel ( id_dodavatel );
+
+ALTER TABLE prodej
+    ADD CONSTRAINT prodej_exemplar_fk FOREIGN KEY ( exemplar_id_exemplare )
+        REFERENCES exemplar ( id_exemplare );
+
+ALTER TABLE prodej
+    ADD CONSTRAINT prodej_prodejce_fk FOREIGN KEY ( prodejce_cislo_zamestnance )
+        REFERENCES prodejce ( cislo_zamestnance );
+
+ALTER TABLE prodej
+    ADD CONSTRAINT prodej_zakaznik_fk FOREIGN KEY ( cislo_zakaznicke_karty )
+        REFERENCES zakaznik ( cislo_zakaznicke_karty );
+
+ALTER TABLE rozpis_autoru
+    ADD CONSTRAINT relation_1_autor_fk FOREIGN KEY ( autor_id )
+        REFERENCES autor ( id );
+
+ALTER TABLE rozpis_autoru
+    ADD CONSTRAINT relation_1_kniha_fk FOREIGN KEY ( kniha_isbn )
+        REFERENCES kniha ( isbn );
+
+ALTER TABLE rezervace
+    ADD CONSTRAINT rezervace_ctenar_fk FOREIGN KEY ( ctenar_cislo_prukazu_ctenare )
+        REFERENCES ctenar ( cislo_prukazu_ctenare );
+
+ALTER TABLE rezervace
+    ADD CONSTRAINT rezervace_kniha_fk FOREIGN KEY ( kniha_isbn )
+        REFERENCES kniha ( isbn );
+
+ALTER TABLE sklad
+    ADD CONSTRAINT sklad_dodavatel_fk FOREIGN KEY ( dodavatel_id_dodavatel )
+        REFERENCES dodavatel ( id_dodavatel );
+
+ALTER TABLE vypujcka
+    ADD CONSTRAINT vypujcka_ctenar_fk FOREIGN KEY ( ctenar_cislo_prukazu_ctenare )
+        REFERENCES ctenar ( cislo_prukazu_ctenare );
+
+ALTER TABLE vypujcka
+    ADD CONSTRAINT vypujcka_exemplar_fk FOREIGN KEY ( exemplar_id_exemplare )
+        REFERENCES exemplar ( id_exemplare );
+
+ALTER TABLE vypujcka
+    ADD CONSTRAINT vypujcka_knihovnik_fk FOREIGN KEY ( knihovnik_cislo_zamestnance )
+        REFERENCES knihovnik ( cislo_zamestnance );
+
+CREATE OR REPLACE TYPE BODY typ_cena AS
+    MEMBER FUNCTION celkem RETURN NUMBER AS
+        soucet NUMBER;
+    BEGIN
+        soucet := cena_kusu * pocet;
+        RETURN soucet;
+    END celek;
+
+END;
+/
+
+CREATE OR REPLACE TYPE BODY typ_vek AS
+    MEMBER FUNCTION generovani_veku RETURN NUMBER AS
+
+        a     VARCHAR2(10);
+        b     VARCHAR2(10);
+        c     VARCHAR2(10);
+        b1    NUMBER;
+        stari NUMBER;
+    BEGIN
+        a := substr(rc, 1, 2);
+        IF a > '22' THEN
+            a := '19' || a;
+        ELSE
+            a := '20' || a;
+        END IF;
+
+        b := substr(rc, 3, 2);
+        IF b > '50' THEN
+            b1 := to_number(b) - 50;
+            b := to_char(b1);
+        END IF;
+
+        c := substr(rc, 5, 2);
+        stari := round((sysdate - to_date(b
+                                          || '/'
+                                          || c
+                                          || '/'
+                                          || a)) / 365, 5);
+
+        RETURN stari;
+    END vek;
+
+END;
+/
+
+CREATE OR REPLACE TRIGGER fkntm_prodej BEFORE
+    UPDATE OF cislo_zakaznicke_karty ON prodej
+BEGIN
+    raise_application_error(-20225, 'Non Transferable FK constraint  on table Prodej is violated');
+END;
+/
+
+CREATE OR REPLACE TRIGGER arc_arc_4_partner BEFORE
+    INSERT OR UPDATE OF dodavatel_id_dodavatel ON partner
+    FOR EACH ROW
+DECLARE
+    d VARCHAR2(9);
+BEGIN
+    SELECT
+        a.typ_dodavatele
+    INTO d
+    FROM
+        dodavatel a
+    WHERE
+        a.id_dodavatel = :new.dodavatel_id_dodavatel;
+
+    IF ( d IS NULL OR d <> 'partner' ) THEN
+        raise_application_error(-20223, 'FK Partner_Dodavatel_FK in Table Partner violates Arc constraint on Table Dodavatel - discriminator column typ_dodavatele doesn''t have value ''partner''');
+    END IF;
+
+EXCEPTION
+    WHEN no_data_found THEN
+        NULL;
+    WHEN OTHERS THEN
+        RAISE;
+END;
+/
+
+CREATE OR REPLACE TRIGGER arc_arc_4_firma BEFORE
+    INSERT OR UPDATE OF dodavatel_id_dodavatel ON firma
+    FOR EACH ROW
+DECLARE
+    d VARCHAR2(9);
+BEGIN
+    SELECT
+        a.typ_dodavatele
+    INTO d
+    FROM
+        dodavatel a
+    WHERE
+        a.id_dodavatel = :new.dodavatel_id_dodavatel;
+
+    IF ( d IS NULL OR d <> 'firma' ) THEN
+        raise_application_error(-20223, 'FK Firma_Dodavatel_FK in Table Firma violates Arc constraint on Table Dodavatel - discriminator column typ_dodavatele doesn''t have value ''firma''');
+    END IF;
+
+EXCEPTION
+    WHEN no_data_found THEN
+        NULL;
+    WHEN OTHERS THEN
+        RAISE;
+END;
+/
